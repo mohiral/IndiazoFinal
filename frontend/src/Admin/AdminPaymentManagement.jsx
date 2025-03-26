@@ -24,7 +24,7 @@ const AdminPaymentManagement = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await axios.get("http://localhost:5001/api/admin/all-payments")
+      const response = await axios.get("https://backend.indiazo.com/api/admin/all-payments")
       setPayments(response.data)
       setLoading(false)
     } catch (error) {
@@ -36,7 +36,7 @@ const AdminPaymentManagement = () => {
 
   const handleUpdateStatus = async (paymentId, status) => {
     try {
-      const response = await axios.put(`http://localhost:5001/api/admin/update-payment/${paymentId}`, {
+      const response = await axios.put(`https://backend.indiazo.com/api/admin/update-payment/${paymentId}`, {
         status,
       })
       if (response.status === 200) {
@@ -58,7 +58,7 @@ const AdminPaymentManagement = () => {
   const handleSaveEdit = async () => {
     try {
       // Use the new update-payment endpoint
-      const response = await axios.put(`http://localhost:5001/api/admin/update-payment/${editPayment._id}`, {
+      const response = await axios.put(`https://backend.indiazo.com/api/admin/update-payment/${editPayment._id}`, {
         userName: editPayment.userName,
         userEmail: editPayment.userEmail,
         userId: editPayment.userId,
@@ -86,7 +86,7 @@ const AdminPaymentManagement = () => {
   const confirmDelete = async () => {
     try {
       // Use the new delete-payment endpoint
-      const response = await axios.delete(`http://localhost:5001/api/admin/delete-payment/${paymentToDelete._id}`)
+      const response = await axios.delete(`https://backend.indiazo.com/api/admin/delete-payment/${paymentToDelete._id}`)
 
       if (response.status === 200) {
         setIsDeleteDialogOpen(false)

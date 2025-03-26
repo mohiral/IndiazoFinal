@@ -48,7 +48,7 @@ const PaymentQRPage = () => {
 
   const fetchUpiSettings = async () => {
     try {
-      const response = await axios.get("http://localhost:5001/api/upi-settings/active")
+      const response = await axios.get("https://backend.indiazo.com/api/upi-settings/active")
       if (response.data && response.data.upiId) {
         setUpiSettings(response.data)
       }
@@ -88,7 +88,7 @@ const PaymentQRPage = () => {
     setIsSubmitting(true)
 
     try {
-      const response = await axios.post("http://localhost:5001/api/submit-payment", {
+      const response = await axios.post("https://backend.indiazo.com/api/submit-payment", {
         userId,
         userName,
         userEmail,
