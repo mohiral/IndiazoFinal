@@ -1,6 +1,8 @@
 const express = require("express")
 const router = express.Router()
 const Payment = require("../models/Payment")
+const { generateGameId, normalizeGameId } = require("../utils/game-id-utils") // Import the utility function
+const CrashHistory = require("../models/crash-history")
 
 router.post("/submit-payment", async (req, res) => {
   try {
@@ -351,12 +353,12 @@ router.get("/wallet-balance/:userId", async (req, res) => {
 })
 
 // New route to update user balance after game win/loss
+// In paymentRoutes.js
 router.post("/update-balance", async (req, res) => {
   try {
-    const { userId, newBalance, gameResult, betAmount, winAmount, gameId } = req.body
+    const { userId, newBalance, gameResult, betAmount, winAmount, gameId, sectionId } = req.body
 
-    // Log the received data
-    console.log("Received update-balance request:", {
+    console.log(`Received update-balance request from section ${sectionId}:`, {
       userId,
       newBalance,
       gameResult,
@@ -365,33 +367,77 @@ router.post("/update-balance", async (req, res) => {
       gameId,
     })
 
-    // Create a new payment record to track the game transaction
-    const gameTransaction = new Payment({
-      userId,
-      amount: gameResult === "win" ? winAmount : -betAmount, // Positive for win, negative for loss
-      status: "confirmed", // Auto-confirm game transactions
-      transactionType: gameResult === "win" ? "game_win" : "game_loss",
-      gameDetails: {
-        betAmount,
-        multiplier: gameResult === "win" ? winAmount / betAmount : 0,
-        result: gameResult,
-        gameId: gameId || "unknown", // Provide a default if gameId is undefined
-      },
-    })
+    // Validate the gameId
+    if (!gameId || typeof gameId !== "string") {
+      console.error(`Invalid gameId received: ${gameId}`)
+      return res.status(400).json({
+        message: "Invalid gameId",
+        error: "GameId must be a valid string",
+      })
+    }
 
-    // Log the transaction object before saving
-    console.log("Game transaction to save:", gameTransaction)
+    // Handle different game results appropriately
+    let transactionType
+    let amount
 
-    // Save the game transaction
-    await gameTransaction.save()
+    if (gameResult === "win") {
+      transactionType = "game_win"
+      amount = winAmount
+    } else if (gameResult === "loss") {
+      transactionType = "game_loss"
+      amount = -betAmount
+    } else if (gameResult === "bet_placed") {
+      transactionType = "bet_placed"
+      amount = 0
+    } else if (gameResult === "bet_canceled") {
+      transactionType = "bet_canceled"
+      amount = 0
+    }
 
-    // Log the saved transaction
-    console.log("Game transaction saved successfully")
+    // Only create a transaction record if we have a valid transaction type
+    if (transactionType) {
+      // Normalize the gameId to ensure UUID format consistency
+      let finalGameId = normalizeGameId(gameId)
+      if (finalGameId !== gameId) {
+        console.log(`Normalized gameId format: ${gameId} -> ${finalGameId}`)
+      }
+
+      // Double-check if the gameId exists in CrashHistory
+      const crashRecord = await CrashHistory.findOne({ gameId: finalGameId })
+
+      if (!crashRecord && gameResult !== "bet_placed" && gameResult !== "bet_canceled") {
+        // If we're recording a win/loss and the gameId doesn't exist in crash history,
+        // try to find the most recent crash record
+        const recentCrash = await CrashHistory.findOne().sort({ timestamp: -1 }).limit(1)
+
+        if (recentCrash) {
+          console.log(
+            `GameId ${finalGameId} not found in crash history. Using most recent crash gameId: ${recentCrash.gameId}`,
+          )
+          finalGameId = recentCrash.gameId
+        }
+      }
+
+      const gameTransaction = new Payment({
+        userId,
+        amount: amount,
+        status: "confirmed",
+        transactionType: transactionType,
+        gameDetails: {
+          betAmount,
+          multiplier: gameResult === "win" ? winAmount / betAmount : 0,
+          result: gameResult,
+          gameId: finalGameId,
+        },
+      })
+
+      await gameTransaction.save()
+      console.log(`Transaction saved with gameId: ${finalGameId}`)
+    }
 
     res.status(200).json({
-      message: `Balance updated successfully after game ${gameResult}`,
+      message: `Transaction recorded: ${gameResult}`,
       newBalance,
-      transaction: gameTransaction,
     })
   } catch (error) {
     console.error("Error updating balance after game:", error)

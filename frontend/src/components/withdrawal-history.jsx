@@ -24,7 +24,7 @@ const WithdrawalHistory = () => {
 
   const fetchWithdrawals = async (userId) => {
     try {
-      const response = await fetch(`https://backend.indiazo.com/api/user-withdrawals/${userId}`)
+      const response = await fetch(`http://localhost:5001/api/user-withdrawals/${userId}`)
       const data = await response.json()
       setWithdrawals(data)
     } catch (error) {

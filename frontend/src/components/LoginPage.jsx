@@ -58,7 +58,7 @@ const LoginPage = () => {
   const fetchContactInfo = async () => {
     setLoadingContacts(true)
     try {
-      const response = await fetch("https://backend.indiazo.com/api/contacts/active")
+      const response = await fetch("/api/contacts/active")
       const data = await response.json()
 
       if (data.success && data.contacts) {
@@ -99,7 +99,7 @@ const LoginPage = () => {
 
   const saveUserToDB = async (userData) => {
     try {
-      const response = await fetch("https://backend.indiazo.com/api/users", {
+      const response = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
@@ -126,7 +126,7 @@ const LoginPage = () => {
 
     try {
       // Check if user exists in database
-      const response = await fetch(`https://backend.indiazo.com/api/users?mobile=${formData.mobile}`)
+      const response = await fetch(`/api/users?mobile=${formData.mobile}`)
       const users = await response.json()
       const existingUser = users.find((u) => u.userId === formData.mobile)
 
@@ -186,7 +186,7 @@ const LoginPage = () => {
 
     try {
       // Check if user already exists
-      const response = await fetch(`https://backend.indiazo.com/api/users?mobile=${formData.mobile}`)
+      const response = await fetch(`/api/users?mobile=${formData.mobile}`)
       const users = await response.json()
       const existingUser = users.find((u) => u.userId === formData.mobile)
 
@@ -240,7 +240,7 @@ const LoginPage = () => {
     if (userId) {
       try {
         // Make sure the endpoint matches exactly what's in your Express router
-        await fetch("https://backend.indiazo.com/api/users/logout", {
+        await fetch("/api/users/logout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId }),

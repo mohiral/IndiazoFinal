@@ -7,7 +7,7 @@ import Rocket from "../assets/Rocket.gif"
 import BetSection from "./bet-section"
 
 // Initialize socket connection
-const socket = io("https://backend.indiazo.com") // Change to your server URL in production
+const socket = io("http://localhost:5001") // Change to your server URL in production
 
 const CrashGame = () => {
   const [multiplier, setMultiplier] = useState(1.0)
@@ -558,13 +558,15 @@ const CrashGame = () => {
 
   return (
     <div
-      className={`max-w-3xl mx-auto bg-gradient-to-b from-black to-blue-900 flex flex-col items-center justify-center text-white p-2 sm:p-4 relative ${screenShake ? "animate-screen-shake" : ""}`}
+      className={`max-w-3xl mx-auto bg-gradient-to-b from-black to-blue-900 flex flex-col items-center justify-center text-white  relative ${screenShake ? "animate-screen-shake" : ""}`}
       onClick={(e) => e.stopPropagation()} // Prevent click propagation
     >
+
+      {/* <div className="min-h-screen"> */}
       {/* Navigation Bar */}
-      <div className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center p-1 sm:p-2 rounded-t-lg font-bold text-sm sm:text-lg mb-1 shadow-lg">
+      {/* <div className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center p-1 sm:p-2 rounded-t-lg font-bold text-sm sm:text-lg mb-1 shadow-lg">
         COSMIC CRASH
-      </div>
+      </div> */}
 
       {/* Status Message */}
       {statusMessage && <div className="w-full bg-green-600/80 mb-2 p-2 rounded text-center">{statusMessage}</div>}
@@ -585,7 +587,7 @@ const CrashGame = () => {
       </div>
 
       {/* Graph Container - Adjusted height to match the reference image */}
-      <div className="w-full h-auto min-h-[250px] md:min-h-[300px] bg-[#0a192f] p-2 sm:p-4 rounded-lg flex flex-col items-center relative border border-indigo-900 shadow-[0_0_15px_rgba(66,153,225,0.5)]">
+      <div className="w-full h-auto overflow-hidden min-h-[250px] md:min-h-[300px] bg-[#0a192f] p-2 sm:p-4 rounded-lg flex flex-col items-center relative border border-indigo-900 shadow-[0_0_15px_rgba(66,153,225,0.5)]">
         {/* Slow motion overlay when active */}
         {slowMotionActive && <div className="absolute inset-0 bg-blue-900/20 z-50 pointer-events-none"></div>}
 
@@ -1355,6 +1357,7 @@ const CrashGame = () => {
       <audio id="explosion-sound" src="/explosion.mp3" preload="auto" />
       <audio id="metal-crash-sound" src="/metal-crash.mp3" preload="auto" />
     </div>
+    // </div>
   )
 }
 

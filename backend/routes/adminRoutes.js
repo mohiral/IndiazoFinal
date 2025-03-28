@@ -390,6 +390,20 @@ router.get("/admin/user-bets", async (req, res) => {
         bet.gameDetails,
       )
 
+      // Add this validation and conversion code:
+      let gameId = bet.gameDetails?.gameId || "unknown"
+
+      // Ensure gameId is in UUID format
+      if (gameId && (gameId.startsWith("game-") || !gameId.includes("-"))) {
+        console.log(`Converting non-standard gameId format: ${gameId}`)
+        // Try to extract UUID if it's embedded in the string
+        const uuidMatch = gameId.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)
+        if (uuidMatch) {
+          gameId = uuidMatch[1]
+          console.log(`Extracted UUID: ${gameId}`)
+        }
+      }
+
       return {
         _id: bet._id,
         userId: bet.userId,
@@ -399,7 +413,7 @@ router.get("/admin/user-bets", async (req, res) => {
         status: isWin ? "won" : "lost",
         cashoutMultiplier: bet.gameDetails?.multiplier || 1.0,
         createdAt: bet.createdAt || new Date(),
-        gameId: bet.gameDetails?.gameId || "unknown",
+        gameId: gameId,
         crashPoint: bet.gameDetails?.crashPoint || (isWin ? bet.gameDetails?.multiplier : 1.0),
       }
     })
@@ -435,10 +449,53 @@ router.get("/admin/game-stats/:gameId", async (req, res) => {
     const crashHistory = await CrashHistory.findOne({ gameId })
 
     // Get all bets for this game
-    const gameBets = await Payment.find({
-      transactionType: { $in: ["game_win", "game_loss"] },
-      "gameDetails.gameId": gameId,
-    }).lean()
+    let gameBets = []
+    try {
+      // First try exact match
+      gameBets = await Payment.find({
+        "gameDetails.gameId": gameId,
+        transactionType: { $in: ["game_win", "game_loss"] },
+      }).lean()
+
+      console.log(`Found ${gameBets.length} bets with exact gameId match for game ${gameId}`)
+
+      // If no results, try matching with UUID pattern extraction
+      if (gameBets.length === 0) {
+        console.log(`Trying UUID pattern matching for gameId: ${gameId}`)
+
+        // Get all game transactions
+        const allGameBets = await Payment.find({
+          transactionType: { $in: ["game_win", "game_loss"] },
+          "gameDetails.gameId": { $exists: true },
+        }).lean()
+
+        // Filter manually to find matches based on UUID pattern
+        gameBets = allGameBets.filter((bet) => {
+          if (!bet.gameDetails?.gameId) return false
+
+          // Check if either contains the other
+          if (bet.gameDetails.gameId.includes(gameId) || gameId.includes(bet.gameDetails.gameId)) {
+            return true
+          }
+
+          // Extract UUID pattern if present in both
+          const gameIdUuidMatch = gameId.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)
+          const betGameIdUuidMatch = bet.gameDetails.gameId.match(
+            /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+          )
+
+          if (gameIdUuidMatch && betGameIdUuidMatch) {
+            return gameIdUuidMatch[1] === betGameIdUuidMatch[1]
+          }
+
+          return false
+        })
+
+        console.log(`Found ${gameBets.length} bets with UUID pattern matching`)
+      }
+    } catch (error) {
+      console.error(`Error finding bets for game ${gameId}:`, error)
+    }
 
     if (!gameBets || gameBets.length === 0) {
       return res.status(200).json({
@@ -460,8 +517,27 @@ router.get("/admin/game-stats/:gameId", async (req, res) => {
     // Format the bets and calculate totals
     const formattedBets = gameBets.map((bet) => {
       const isWin = bet.transactionType === "game_win"
-      const betAmount = bet.gameDetails?.betAmount || 0
-      const winAmount = isWin ? Math.abs(bet.amount) : 0
+
+      // Log each bet for debugging
+      console.log(
+        `Processing bet: userId=${bet.userId}, userName=${bet.userName}, transactionType=${bet.transactionType}, amount=${bet.amount}, gameDetails=`,
+        bet.gameDetails,
+      )
+
+      let betAmount = 0
+      let winAmount = 0
+
+      // For game_win transactions
+      if (isWin) {
+        winAmount = Math.abs(bet.amount || 0)
+        // Use gameDetails.betAmount if available, otherwise try to derive from profit
+        betAmount = bet.gameDetails?.betAmount || winAmount / (bet.gameDetails?.multiplier || 1)
+      }
+      // For game_loss transactions
+      else {
+        // For losses, the bet amount is in gameDetails.betAmount
+        betAmount = bet.gameDetails?.betAmount || 0
+      }
 
       totalBetAmount += betAmount
       totalWinAmount += winAmount
@@ -555,10 +631,55 @@ router.get("/admin/games", async (req, res) => {
         console.log(`Processing game with ID: ${game.gameId}`)
 
         // Get all bets for this game - FIXED QUERY
-        const gameBets = await Payment.find({
-          "gameDetails.gameId": game.gameId,
-          transactionType: { $in: ["game_win", "game_loss"] },
-        }).lean()
+        let gameBets = []
+        try {
+          // First try exact match
+          gameBets = await Payment.find({
+            "gameDetails.gameId": game.gameId,
+            transactionType: { $in: ["game_win", "game_loss"] },
+          }).lean()
+
+          console.log(`Found ${gameBets.length} bets with exact gameId match for game ${game.gameId}`)
+
+          // If no results, try matching with UUID pattern extraction
+          if (gameBets.length === 0) {
+            console.log(`Trying UUID pattern matching for gameId: ${game.gameId}`)
+
+            // Get all game transactions
+            const allGameBets = await Payment.find({
+              transactionType: { $in: ["game_win", "game_loss"] },
+              "gameDetails.gameId": { $exists: true },
+            }).lean()
+
+            // Filter manually to find matches based on UUID pattern
+            gameBets = allGameBets.filter((bet) => {
+              if (!bet.gameDetails?.gameId) return false
+
+              // Check if either contains the other
+              if (bet.gameDetails.gameId.includes(game.gameId) || game.gameId.includes(bet.gameDetails.gameId)) {
+                return true
+              }
+
+              // Extract UUID pattern if present in both
+              const gameIdUuidMatch = game.gameId.match(
+                /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+              )
+              const betGameIdUuidMatch = bet.gameDetails.gameId.match(
+                /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+              )
+
+              if (gameIdUuidMatch && betGameIdUuidMatch) {
+                return gameIdUuidMatch[1] === betGameIdUuidMatch[1]
+              }
+
+              return false
+            })
+
+            console.log(`Found ${gameBets.length} bets with UUID pattern matching`)
+          }
+        } catch (error) {
+          console.error(`Error finding bets for game ${game.gameId}:`, error)
+        }
 
         console.log(`Found ${gameBets.length} bets for game ${game.gameId}`)
 
@@ -655,134 +776,6 @@ router.get("/admin/games", async (req, res) => {
   }
 })
 
-// Get detailed game statistics by game ID - IMPROVED
-router.get("/admin/game-stats/:gameId", async (req, res) => {
-  try {
-    const { gameId } = req.params
-
-    if (!gameId) {
-      return res.status(400).json({ message: "Game ID is required" })
-    }
-
-    console.log(`Fetching details for game: ${gameId}`)
-
-    // Get the crash point for this game
-    const crashHistory = await CrashHistory.findOne({ gameId })
-
-    if (!crashHistory) {
-      console.log(`No crash history found for gameId: ${gameId}`)
-    } else {
-      console.log(`Found crash history: crashPoint=${crashHistory.crashPoint}, isAdminSet=${crashHistory.isAdminSet}`)
-    }
-
-    // Get all bets for this game with improved query
-    const gameBets = await Payment.find({
-      "gameDetails.gameId": gameId,
-      transactionType: { $in: ["game_win", "game_loss"] },
-    }).lean()
-
-    console.log(`Found ${gameBets.length} bets for game ${gameId}`)
-
-    // If no bets found, try a more flexible query
-    if (gameBets.length === 0) {
-      console.log(`No bets found with exact gameId match, trying partial match...`)
-      // Try a more flexible query with regex
-      const flexibleBets = await Payment.find({
-        transactionType: { $in: ["game_win", "game_loss"] },
-      }).lean()
-
-      // Filter manually to find any potential matches
-      const possibleMatches = flexibleBets.filter((bet) => {
-        if (!bet.gameDetails || !bet.gameDetails.gameId) return false
-        return bet.gameDetails.gameId.includes(gameId) || gameId.includes(bet.gameDetails.gameId)
-      })
-
-      console.log(`Found ${possibleMatches.length} potential matches with flexible search`)
-
-      if (possibleMatches.length > 0) {
-        console.log(
-          `Game IDs in payments:`,
-          possibleMatches.map((b) => b.gameDetails?.gameId),
-        )
-      }
-    }
-
-    if (!gameBets || gameBets.length === 0) {
-      return res.status(200).json({
-        gameId,
-        crashPoint: crashHistory?.crashPoint || "Unknown",
-        isAdminSet: crashHistory?.isAdminSet || false,
-        timestamp: crashHistory?.timestamp || null,
-        totalBets: 0,
-        totalBetAmount: 0,
-        totalWinAmount: 0,
-        adminProfit: 0,
-        bets: [],
-      })
-    }
-
-    let totalBetAmount = 0
-    let totalWinAmount = 0
-
-    // Format the bets and calculate totals
-    const formattedBets = gameBets.map((bet) => {
-      const isWin = bet.transactionType === "game_win"
-
-      // Log each bet for debugging
-      console.log(
-        `Processing bet: userId=${bet.userId}, userName=${bet.userName}, transactionType=${bet.transactionType}, amount=${bet.amount}, gameDetails=`,
-        bet.gameDetails,
-      )
-
-      let betAmount = 0
-      let winAmount = 0
-
-      // For game_win transactions
-      if (isWin) {
-        winAmount = Math.abs(bet.amount || 0)
-        // Use gameDetails.betAmount if available, otherwise try to derive from profit
-        betAmount = bet.gameDetails?.betAmount || winAmount / (bet.gameDetails?.multiplier || 1)
-      }
-      // For game_loss transactions
-      else {
-        // For losses, the bet amount is in gameDetails.betAmount
-        betAmount = bet.gameDetails?.betAmount || 0
-      }
-
-      totalBetAmount += betAmount
-      totalWinAmount += winAmount
-
-      return {
-        userId: bet.userId,
-        username: bet.userName || "Anonymous",
-        betAmount,
-        winAmount,
-        profit: winAmount - betAmount,
-        status: isWin ? "won" : "lost",
-        cashoutMultiplier: bet.gameDetails?.multiplier || 1.0,
-        timestamp: bet.createdAt,
-      }
-    })
-
-    const adminProfit = totalBetAmount - totalWinAmount
-
-    res.status(200).json({
-      gameId,
-      crashPoint: crashHistory?.crashPoint || "Unknown",
-      isAdminSet: crashHistory?.isAdminSet || false,
-      timestamp: crashHistory?.timestamp || null,
-      totalBets: gameBets.length,
-      totalBetAmount,
-      totalWinAmount,
-      adminProfit,
-      bets: formattedBets,
-    })
-  } catch (error) {
-    console.error("Error fetching game statistics:", error)
-    res.status(500).json({ message: "Server error" })
-  }
-})
-
 // Change admin password
 router.post("/admin/change-password", async (req, res) => {
   try {
@@ -813,7 +806,6 @@ router.post("/admin/change-password", async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 })
-
 
 module.exports = router
 

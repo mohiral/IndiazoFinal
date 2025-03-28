@@ -54,7 +54,7 @@ export default function BetSection({
       if (!user || !user.userId) return
 
       try {
-        const response = await fetch(`https://backend.indiazo.com/api/wallet-balance/${user.userId}`)
+        const response = await fetch(`http://localhost:5001/api/wallet-balance/${user.userId}`)
         const data = await response.json()
 
         const confirmed = data.payments
@@ -169,6 +169,31 @@ export default function BetSection({
     }
   }, [resetBet])
 
+  // Add a useEffect to listen for game_id events from the server
+  useEffect(() => {
+    // Create a function to handle the game_id event
+    const handleGameId = (newGameId) => {
+      console.log(`Section ${id} - Received new gameId from server:`, newGameId)
+      if (newGameId && typeof newGameId === "string") {
+        currentGameId.current = newGameId
+      }
+    }
+
+    // Set up the socket event listener
+    const socket = window.socket // Assuming the socket is available globally
+    if (socket) {
+      socket.on("game_id", handleGameId)
+
+      // Request the current gameId when component mounts
+      socket.emit("request_game_id")
+
+      // Clean up the event listener when component unmounts
+      return () => {
+        socket.off("game_id", handleGameId)
+      }
+    }
+  }, [id])
+
   const handleIncreaseBet = () => {
     if (!hasBet) {
       setBetAmount((prev) => Number.parseFloat((prev + 10).toFixed(2)))
@@ -197,33 +222,41 @@ export default function BetSection({
     setAutoTargetMultiplier((prev) => Number.parseFloat(Math.max(1.1, prev - 0.5).toFixed(2)))
   }
 
+  // In the updateGameBalance function, ensure we're using the server's gameId
   const updateGameBalance = async (userId, newBalance, gameResult, betAmount, winAmount, gameId) => {
     try {
-      console.log(`Section ${id} - Updating game balance with gameId:`, gameId)
+      // Always use the current gameId from the server
+      const serverGameId = currentGameId.current
 
-      // Make sure gameId is defined before sending
+      if (!serverGameId || typeof serverGameId !== "string") {
+        console.error(`Section ${id} - Invalid gameId from server:`, serverGameId)
+        return { error: true, message: "Invalid game ID" }
+      }
+
+      console.log(`Section ${id} - Updating game balance with gameId from server:`, serverGameId)
+
       const payload = {
         userId,
         newBalance,
         gameResult,
         betAmount,
         winAmount,
-        gameId: gameId || `unknown-${Date.now()}`, // Provide a timestamp-based default if gameId is undefined
-        sectionId: id, // Add section ID to track which section made the bet
+        gameId: serverGameId,
+        sectionId: id,
       }
 
       console.log(`Section ${id} - Sending payload to server:`, payload)
 
-      const response = await fetch("https://backend.indiazo.com/api/update-balance", {
+      const response = await fetch("http://localhost:5001/api/update-balance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Section ${id} - Server returned error:`, response.status, errorText);
-        return { error: true, message: `Server error: ${response.status}` };
+        const errorText = await response.text()
+        console.error(`Section ${id} - Server returned error:`, response.status, errorText)
+        return { error: true, message: `Server error: ${response.status}` }
       }
 
       const data = await response.json()
@@ -451,7 +484,7 @@ export default function BetSection({
         showError("Failed to cash out - No response")
         return
       }
-      
+
       if (result.error) {
         console.error(`Section ${id} - Cash out failed:`, result.error)
         showError(result.message || "Failed to cash out")
@@ -891,3 +924,4 @@ export default function BetSection({
     </div>
   )
 }
+

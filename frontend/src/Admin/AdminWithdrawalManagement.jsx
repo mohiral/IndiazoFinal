@@ -42,7 +42,7 @@ const AdminWithdrawalManagement = () => {
       setIsLoading(true)
       setError(null)
       // Updated to use the endpoint that fetches withdrawals from the Payment model
-      const response = await fetch("https://backend.indiazo.com/api/admin/all-withdrawals")
+      const response = await fetch("http://localhost:5001/api/admin/all-withdrawals")
       const data = await response.json()
 
       // Map the data to display withdrawals correctly based on adminApproval
@@ -81,7 +81,7 @@ const AdminWithdrawalManagement = () => {
 
     try {
       // Update adminApproval to approved (not confirmed)
-      const url = `https://backend.indiazo.com/api/admin/update-withdrawal-status/${withdrawal._id}`
+      const url = `http://localhost:5001/api/admin/update-withdrawal-status/${withdrawal._id}`
       const payload = {
         adminApproval: "approved", // Use "approved" instead of "confirmed"
         transactionId: "", // Optional transaction ID
@@ -131,7 +131,7 @@ const AdminWithdrawalManagement = () => {
 
     try {
       // Update adminApproval to rejected
-      const url = `https://backend.indiazo.com/api/admin/update-withdrawal-status/${withdrawal._id}`
+      const url = `http://localhost:5001/api/admin/update-withdrawal-status/${withdrawal._id}`
       const payload = {
         adminApproval: "rejected", // Update adminApproval instead of status
         rejectionReason: "Rejected by admin", // Default rejection reason
@@ -216,7 +216,7 @@ const AdminWithdrawalManagement = () => {
       console.log("Sending update payload:", payload)
 
       // Use the update-withdrawal-status endpoint instead of update-withdrawal
-      const url = `https://backend.indiazo.com/api/admin/update-withdrawal-status/${editWithdrawal._id}`
+      const url = `http://localhost:5001/api/admin/update-withdrawal-status/${editWithdrawal._id}`
 
       const response = await fetch(url, {
         method: "PUT",
@@ -257,7 +257,7 @@ const AdminWithdrawalManagement = () => {
     try {
       setSuccessMessage("")
       // Use the new delete-withdrawal endpoint
-      const response = await fetch(`https://backend.indiazo.com/api/admin/delete-withdrawal/${withdrawalToDelete._id}`, {
+      const response = await fetch(`http://localhost:5001/api/admin/delete-withdrawal/${withdrawalToDelete._id}`, {
         method: "DELETE",
       })
 

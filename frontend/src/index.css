@@ -1,2 +1,13 @@
 @import "tailwindcss";
 
+body {
+    /* background: radial-gradient(circle at bottom left, #1e1e2f, #000000); */
+    background: linear-gradient(to bottom, #000000, #1e3a8a);
+
+    /* bg-gradient-to-b from-black to-blue-900 */
+    /* height: 100vh; */
+    /* display: flex; */
+    /* justify-content: center; */
+    /* align-items: center; */
+    font-family: 'Arial', sans-serif;
+  }

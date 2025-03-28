@@ -7,20 +7,23 @@ import { useEffect, useState } from "react"
 const Layout = () => {
   const location = useLocation()
   const [showNavbar, setShowNavbar] = useState(true)
+  const [showBottomNav, setShowBottomNav] = useState(true)
 
   useEffect(() => {
-    // Hide navbar on specific routes
+    // For CrashGame route, show top navbar but hide bottom navbar
     if (location.pathname === "/CrashGame") {
-      setShowNavbar(false)
+      setShowNavbar(true)
+      setShowBottomNav(false)
     } else {
       setShowNavbar(true)
+      setShowBottomNav(true)
     }
   }, [location.pathname])
 
   return (
     <div className="flex flex-col min-h-screen w-full mb-16">
       <div className="w-full flex flex-col flex-grow">
-        {showNavbar && <Navbar />}
+        {showNavbar && <Navbar showBottomNav={showBottomNav} />}
         <main className="flex-grow overflow-x-hidden">
           <Outlet />
         </main>

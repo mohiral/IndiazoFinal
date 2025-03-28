@@ -30,7 +30,7 @@ const WithdrawPage = () => {
 
   const fetchWalletBalance = async (userId) => {
     try {
-      const response = await fetch(`https://backend.indiazo.com/api/wallet-balance/${userId}`)
+      const response = await fetch(`http://localhost:5001/api/wallet-balance/${userId}`)
       const data = await response.json()
 
       // Set the balance from the API response
@@ -107,7 +107,7 @@ const WithdrawPage = () => {
     console.log("Sending withdrawal data:", withdrawalData)
 
     try {
-      const response = await fetch("https://backend.indiazo.com/api/submit-withdrawal", {
+      const response = await fetch("http://localhost:5001/api/submit-withdrawal", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,8 +154,8 @@ const WithdrawPage = () => {
   const affordablePresetAmounts = presetAmounts.filter((amt) => amt <= maxWithdrawalAmount)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 pt-16 pb-20">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100">
+      <div className="container mx-auto ">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

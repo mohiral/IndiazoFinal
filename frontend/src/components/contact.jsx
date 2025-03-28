@@ -39,7 +39,7 @@ const ContactPage = () => {
   const fetchContacts = async () => {
     try {
       setLoading(true)
-      const response = await axios.get("http://backend.indiazo.com/api/contacts/active")
+      const response = await axios.get("http://localhost:5001/api/contacts/active")
 
       const contactsData = response.data.contacts.reduce(
         (acc, contact) => {

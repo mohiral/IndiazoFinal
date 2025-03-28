@@ -28,7 +28,7 @@ const BetHistory = () => {
 
       try {
         // Use the wallet-balance endpoint which returns all payments including game transactions
-        const response = await fetch(`https://backend.indiazo.com/api/wallet-balance/${user.userId}`)
+        const response = await fetch(`http://localhost:5001/api/wallet-balance/${user.userId}`)
         if (!response.ok) {
           throw new Error("Failed to fetch bet history")
         }

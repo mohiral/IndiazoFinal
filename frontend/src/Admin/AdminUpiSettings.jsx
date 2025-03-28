@@ -35,7 +35,7 @@ const AdminUpiSettings = () => {
   const fetchUpiSettings = async () => {
     setIsLoading(true)
     try {
-      const response = await axios.get("https://backend.indiazo.com/api/upi-settings")
+      const response = await axios.get("http://localhost:5001/api/upi-settings")
       setUpiSettings(response.data)
       setError("")
     } catch (error) {
@@ -53,7 +53,7 @@ const AdminUpiSettings = () => {
     setSuccess("")
 
     try {
-      await axios.post("https://backend.indiazo.com/api/upi-settings", {
+      await axios.post("http://localhost:5001/api/upi-settings", {
         upiId: newUpiId,
         name: newName,
         isActive,
@@ -73,7 +73,7 @@ const AdminUpiSettings = () => {
 
   const toggleActive = async (id, currentStatus) => {
     try {
-      await axios.put(`https://backend.indiazo.com/api/upi-settings/${id}`, {
+      await axios.put(`http://localhost:5001/api/upi-settings/${id}`, {
         isActive: !currentStatus,
       })
       setSuccess("UPI status updated successfully")
@@ -90,7 +90,7 @@ const AdminUpiSettings = () => {
     }
 
     try {
-      await axios.delete(`https://backend.indiazo.com/api/upi-settings/${id}`)
+      await axios.delete(`http://localhost:5001/api/upi-settings/${id}`)
       setSuccess("UPI setting deleted successfully")
       fetchUpiSettings()
     } catch (error) {

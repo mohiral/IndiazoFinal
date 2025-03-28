@@ -19,7 +19,8 @@ import {
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 
-const Navbar = () => {
+// Add a new prop 'showBottomNav' to the component
+const Navbar = ({ showBottomNav = true }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [confirmedBalance, setConfirmedBalance] = useState(0)
   const navigate = useNavigate()
@@ -50,7 +51,7 @@ const Navbar = () => {
 
     const fetchWalletBalances = async () => {
       try {
-        const response = await fetch(`https://backend.indiazo.com/api/wallet-balance/${userId}`)
+        const response = await fetch(`http://localhost:5001/api/wallet-balance/${userId}`)
         const data = await response.json()
 
         const confirmed = data.payments
@@ -102,6 +103,7 @@ const Navbar = () => {
     { path: "/ContactPage", icon: <FaQuestionCircle className="mr-3" />, label: "Help & Support" },
   ]
 
+  // Modify the return statement to conditionally render the bottom navbar
   return (
     <div className="w-full mb-16">
       {/* Top Navbar */}
@@ -205,35 +207,37 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
-      {/* Bottom Navbar */}
-      <div className="fixed z-50 bottom-0 w-full bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-900 text-white py-2 px-4 flex justify-around items-center shadow-lg rounded-t-xl border-t border-blue-700">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path
-          return (
-            <Link key={item.path} to={item.path} className="relative flex flex-col items-center group">
-              <div
-                className={`p-2 rounded-full ${isActive ? "bg-blue-700" : "hover:bg-blue-800"} transition-all duration-300`}
-              >
-                {React.cloneElement(item.icon, {
-                  className: `text-xl ${isActive ? "text-yellow-300" : "text-gray-300 group-hover:text-white"} transition-all duration-300`,
-                })}
-              </div>
-              <span
-                className={`text-xs mt-1 ${isActive ? "opacity-100 text-yellow-300" : "opacity-70 group-hover:opacity-100"} transition-all duration-300`}
-              >
-                {item.label}
-              </span>
-              {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute -bottom-2 w-12 h-1 bg-yellow-300 rounded-full"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-            </Link>
-          )
-        })}
-      </div>
+      {/* Bottom Navbar - Only show if showBottomNav is true */}
+      {showBottomNav && (
+        <div className="fixed z-50 bottom-0 w-full bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-900 text-white py-2 px-4 flex justify-around items-center shadow-lg rounded-t-xl border-t border-blue-700">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path
+            return (
+              <Link key={item.path} to={item.path} className="relative flex flex-col items-center group">
+                <div
+                  className={`p-2 rounded-full ${isActive ? "bg-blue-700" : "hover:bg-blue-800"} transition-all duration-300`}
+                >
+                  {React.cloneElement(item.icon, {
+                    className: `text-xl ${isActive ? "text-yellow-300" : "text-gray-300 group-hover:text-white"} transition-all duration-300`,
+                  })}
+                </div>
+                <span
+                  className={`text-xs mt-1 ${isActive ? "opacity-100 text-yellow-300" : "opacity-70 group-hover:opacity-100"} transition-all duration-300`}
+                >
+                  {item.label}
+                </span>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute -bottom-2 w-12 h-1 bg-yellow-300 rounded-full"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+              </Link>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

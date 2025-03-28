@@ -40,7 +40,7 @@ export default function WalletTransactions() {
 
       try {
         // Fetch user's payment transactions
-        const response = await fetch(`https://backend.indiazo.com/api/user-transactions/${user.userId}`)
+        const response = await fetch(`http://localhost:5001/api/user-transactions/${user.userId}`)
         if (!response.ok) {
           throw new Error("Failed to fetch transaction history")
         }

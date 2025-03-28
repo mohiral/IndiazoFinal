@@ -71,9 +71,9 @@ const AdminDashboard = () => {
     try {
       // Fetch all required data in parallel
       const [usersRes, paymentsRes, withdrawalsRes] = await Promise.all([
-        axios.get("https://backend.indiazo.com/api/users"),
-        axios.get("https://backend.indiazo.com/api/admin/all-payments"),
-        axios.get("https://backend.indiazo.com/api/admin/all-withdrawals"),
+        axios.get("http://localhost:5001/api/users"),
+        axios.get("http://localhost:5001/api/admin/all-payments"),
+        axios.get("http://localhost:5001/api/admin/all-withdrawals"),
       ])
 
       // Add role and status information to users for demo purposes
@@ -411,7 +411,7 @@ const AdminDashboard = () => {
   const handleEditUser = async (user) => {
     try {
       // Fetch the latest user data from MongoDB
-      const response = await axios.get(`https://backend.indiazo.com/api/users/${user.userId}`)
+      const response = await axios.get(`http://localhost:5001/api/users/${user.userId}`)
 
       if (response.status === 200) {
         const userData = response.data
@@ -514,7 +514,7 @@ const AdminDashboard = () => {
       console.log("Sending user data to server:", userData)
 
       // Call the API to update the user
-      const response = await axios.post("https://backend.indiazo.com/api/users", userData)
+      const response = await axios.post("http://localhost:5001/api/users", userData)
 
       if (response.status === 200) {
         // Update the local state
@@ -556,7 +556,7 @@ const AdminDashboard = () => {
   const confirmDeleteUser = async () => {
     try {
       // Call the API to delete the user
-      const response = await axios.delete(`https://backend.indiazo.com/api/users/${selectedUser.userId}`)
+      const response = await axios.delete(`http://localhost:5001/api/users/${selectedUser.userId}`)
 
       if (response.status === 200) {
         // Update the local state
@@ -578,7 +578,7 @@ const AdminDashboard = () => {
   const handleForceLogout = async (user) => {
     try {
       // Call the logout API
-      const response = await axios.post("https://backend.indiazo.com/api/users/logout", {
+      const response = await axios.post("http://localhost:5001/api/users/logout", {
         userId: user.userId,
       })
 
@@ -620,7 +620,7 @@ const AdminDashboard = () => {
   const handleRestrictAccount = async (user) => {
     try {
       // Call the API to restrict the user
-      const response = await axios.post("https://backend.indiazo.com/api/users/restrict", {
+      const response = await axios.post("http://localhost:5001/api/users/restrict", {
         userId: user.userId,
         isRestricted: true,
       })
@@ -681,7 +681,7 @@ const AdminDashboard = () => {
 
         if (withdrawal) {
           // Call the approve-withdraw endpoint
-          await axios.post("https://backend.indiazo.com/api/approve-withdraw", {
+          await axios.post("http://localhost:5001/api/approve-withdraw", {
             id: withdrawal._id,
           })
 
@@ -728,7 +728,7 @@ const AdminDashboard = () => {
 
         if (withdrawal) {
           // Call the reject-withdraw endpoint
-          await axios.post("https://backend.indiazo.com/api/reject-withdraw", {
+          await axios.post("http://localhost:5001/api/reject-withdraw", {
             id: withdrawal._id,
           })
 
@@ -767,7 +767,7 @@ const AdminDashboard = () => {
   const handleApproveWithdrawal = async (withdrawal) => {
     try {
       // Call the approve-withdraw endpoint
-      await axios.post("https://backend.indiazo.com/api/approve-withdraw", {
+      await axios.post("http://localhost:5001/api/approve-withdraw", {
         id: withdrawal._id,
       })
 
@@ -791,7 +791,7 @@ const AdminDashboard = () => {
   const handleRejectWithdrawal = async (withdrawal) => {
     try {
       // Call the reject-withdraw endpoint
-      await axios.post("https://backend.indiazo.com/api/reject-withdraw", {
+      await axios.post("http://localhost:5001/api/reject-withdraw", {
         id: withdrawal._id,
       })
 

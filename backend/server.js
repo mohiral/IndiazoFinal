@@ -100,7 +100,11 @@ function startCountdown() {
   gameState.cashedOut = []
   gameState.currentGameId = uuidv4()
 
+  console.log(`New game starting with gameId: ${gameState.currentGameId}`)
+
   io.emit("game_state", gameState)
+  // Also emit the gameId specifically to ensure clients receive it
+  io.emit("game_id", gameState.currentGameId)
 
   countdownInterval = setInterval(() => {
     gameState.countdown -= 1
@@ -156,6 +160,8 @@ async function endGame(crashPoint) {
   gameState.lastCrashes.unshift(crashPoint)
   gameState.lastCrashes = gameState.lastCrashes.slice(0, 10)
 
+  console.log(`Game crashed with gameId: ${gameState.currentGameId}, crashPoint: ${crashPoint}`)
+
   io.emit("game_crashed", crashPoint)
   io.emit("game_state", gameState)
 
@@ -179,7 +185,9 @@ async function endGame(crashPoint) {
     // Update all active bets as lost
     await Bet.updateMany({ gameId: gameState.currentGameId, status: "active" }, { status: "lost" })
 
-    console.log(`Crash at ${crashPoint}x saved to database${isAdminSet ? " (admin-set)" : ""}`)
+    console.log(
+      `Crash at ${crashPoint}x saved to database with gameId: ${gameState.currentGameId}${isAdminSet ? " (admin-set)" : ""}`,
+    )
   } catch (err) {
     console.error("Error saving crash history:", err)
   }
@@ -276,6 +284,8 @@ io.on("connection", (socket) => {
 
   // Send current game state to the new user
   socket.emit("game_state", gameState)
+  // Also emit the current gameId specifically
+  socket.emit("game_id", gameState.currentGameId)
 
   // Handle user authentication
   socket.on("authenticate", async (data) => {
@@ -528,6 +538,12 @@ io.on("connection", (socket) => {
       // End the game with current multiplier
       endGame(gameState.multiplier)
     }
+  })
+
+  // Handle request for current gameId
+  socket.on("request_game_id", () => {
+    console.log(`Client ${socket.id} requested current gameId, sending: ${gameState.currentGameId}`)
+    socket.emit("game_id", gameState.currentGameId)
   })
 
   // Handle disconnection
