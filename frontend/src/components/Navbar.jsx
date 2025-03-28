@@ -51,7 +51,7 @@ const Navbar = ({ showBottomNav = true }) => {
 
     const fetchWalletBalances = async () => {
       try {
-        const response = await fetch(`http://localhost:5001/api/wallet-balance/${userId}`)
+        const response = await fetch(`https://backend.indiazo.com/api/wallet-balance/${userId}`)
         const data = await response.json()
 
         const confirmed = data.payments

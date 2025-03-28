@@ -7,7 +7,7 @@ import Rocket from "../assets/Rocket.gif"
 import BetSection from "./bet-section"
 
 // Initialize socket connection
-const socket = io("http://localhost:5001") // Change to your server URL in production
+const socket = io("https://backend.indiazo.com") // Change to your server URL in production
 
 const CrashGame = () => {
   const [multiplier, setMultiplier] = useState(1.0)

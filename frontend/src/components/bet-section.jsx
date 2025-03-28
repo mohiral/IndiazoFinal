@@ -54,7 +54,7 @@ export default function BetSection({
       if (!user || !user.userId) return
 
       try {
-        const response = await fetch(`http://localhost:5001/api/wallet-balance/${user.userId}`)
+        const response = await fetch(`https://backend.indiazo.com/api/wallet-balance/${user.userId}`)
         const data = await response.json()
 
         const confirmed = data.payments
@@ -247,7 +247,7 @@ export default function BetSection({
 
       console.log(`Section ${id} - Sending payload to server:`, payload)
 
-      const response = await fetch("http://localhost:5001/api/update-balance", {
+      const response = await fetch("https://backend.indiazo.com/api/update-balance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

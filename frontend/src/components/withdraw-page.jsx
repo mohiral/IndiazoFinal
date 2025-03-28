@@ -30,7 +30,7 @@ const WithdrawPage = () => {
 
   const fetchWalletBalance = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/wallet-balance/${userId}`)
+      const response = await fetch(`https://backend.indiazo.com/api/wallet-balance/${userId}`)
       const data = await response.json()
 
       // Set the balance from the API response
@@ -107,7 +107,7 @@ const WithdrawPage = () => {
     console.log("Sending withdrawal data:", withdrawalData)
 
     try {
-      const response = await fetch("http://localhost:5001/api/submit-withdrawal", {
+      const response = await fetch("https://backend.indiazo.com/api/submit-withdrawal", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

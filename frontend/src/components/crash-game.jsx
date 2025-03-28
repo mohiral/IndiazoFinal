@@ -437,7 +437,7 @@ const CrashGame = () => {
                 value={serverUrl}
                 onChange={(e) => setServerUrl(e.target.value)}
                 className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
-                placeholder="http://localhost:5001"
+                placeholder="https://backend.indiazo.com"
               />
             </div>
             <div>

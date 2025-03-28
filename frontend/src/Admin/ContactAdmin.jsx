@@ -33,7 +33,7 @@ const ContactAdmin = () => {
   const fetchContacts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5001/api/contacts');
+      const response = await axios.get('https://backend.indiazo.com/api/contacts');
       setContacts(response.data.contacts);
     } catch (error) {
       console.error("Failed to fetch contacts:", error);
@@ -63,7 +63,7 @@ const ContactAdmin = () => {
     setIsSubmitting(true);
     
     try {
-      await axios.post('http://localhost:5001/api/contacts', formData);
+      await axios.post('https://backend.indiazo.com/api/contacts', formData);
       showNotification("Contact added successfully", "success");
       setFormData({
         type: "phone",
@@ -84,7 +84,7 @@ const ContactAdmin = () => {
     if (!window.confirm("Are you sure you want to delete this contact?")) return;
     
     try {
-      await axios.delete(`http://localhost:5001/api/contacts/${id}`);
+      await axios.delete(`https://backend.indiazo.com/api/contacts/${id}`);
       showNotification("Contact deleted successfully", "success");
       fetchContacts();
     } catch (error) {

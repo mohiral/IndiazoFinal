@@ -54,7 +54,7 @@ export default function AdminPanel() {
       }
 
       try {
-        const response = await fetch(`http://localhost:5001/api/admin/check/${user.userId}`)
+        const response = await fetch(`https://backend.indiazo.com/api/admin/check/${user.userId}`)
         const data = await response.json()
         setIsAdmin(data.isAdmin)
         if (data.isAdmin) {
@@ -98,7 +98,7 @@ export default function AdminPanel() {
   const fetchCrashHistory = async () => {
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:5001/api/admin/crash-history")
+      const response = await fetch("https://backend.indiazo.com/api/admin/crash-history")
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -114,7 +114,7 @@ export default function AdminPanel() {
 
   const fetchCrashSequence = async () => {
     try {
-      const response = await fetch("http://localhost:5001/api/admin/crash-sequence")
+      const response = await fetch("https://backend.indiazo.com/api/admin/crash-sequence")
 
       if (response.ok) {
         const data = await response.json()
@@ -131,7 +131,7 @@ export default function AdminPanel() {
   const fetchBetStats = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost:5001/api/admin/bet-stats?timeFrame=${timeFrame}`)
+      const response = await fetch(`https://backend.indiazo.com/api/admin/bet-stats?timeFrame=${timeFrame}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -150,7 +150,7 @@ export default function AdminPanel() {
     try {
       setLoading(true)
       const response = await fetch(
-        `http://localhost:5001/api/admin/user-bets?timeFrame=${timeFrame}&page=${betsPagination.page}&limit=${betsPagination.limit}`,
+        `https://backend.indiazo.com/api/admin/user-bets?timeFrame=${timeFrame}&page=${betsPagination.page}&limit=${betsPagination.limit}`,
       )
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -172,7 +172,7 @@ export default function AdminPanel() {
     try {
       setLoading(true)
       const response = await fetch(
-        `http://localhost:5001/api/admin/games?timeFrame=${timeFrame}&page=${gamesPagination.page}&limit=${gamesPagination.limit}`,
+        `https://backend.indiazo.com/api/admin/games?timeFrame=${timeFrame}&page=${gamesPagination.page}&limit=${gamesPagination.limit}`,
       )
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -212,7 +212,7 @@ export default function AdminPanel() {
 
       // Get all user bets to calculate overall statistics
       const betsResponse = await fetch(
-        `http://localhost:5001/api/admin/user-bets?timeFrame=${timeFrame}&page=1&limit=1000`,
+        `https://backend.indiazo.com/api/admin/user-bets?timeFrame=${timeFrame}&page=1&limit=1000`,
       )
 
       if (!betsResponse.ok) {
@@ -296,7 +296,7 @@ export default function AdminPanel() {
   const fetchGameDetails = async (gameId) => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost:5001/api/admin/game-stats/${gameId}`)
+      const response = await fetch(`https://backend.indiazo.com/api/admin/game-stats/${gameId}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -358,7 +358,7 @@ export default function AdminPanel() {
     setSuccess("")
 
     try {
-      const response = await fetch("http://localhost:5001/api/admin/set-crash", {
+      const response = await fetch("https://backend.indiazo.com/api/admin/set-crash", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -404,7 +404,7 @@ export default function AdminPanel() {
     setSuccess("")
 
     try {
-      const response = await fetch("http://localhost:5001/api/admin/set-crash-sequence", {
+      const response = await fetch("https://backend.indiazo.com/api/admin/set-crash-sequence", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -434,7 +434,7 @@ export default function AdminPanel() {
     setSuccess("")
 
     try {
-      const response = await fetch("http://localhost:5001/api/admin/deactivate-crash-sequence", {
+      const response = await fetch("https://backend.indiazo.com/api/admin/deactivate-crash-sequence", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
